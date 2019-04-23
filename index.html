@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="dist/leaflet.awesome-markers.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+   
+    
+
+
+    <title>Flocation</title>
+    <style type="text/css">
+      #map{
+        height: 100vh;
+      }
+      .block-all{
+        position: absolute;
+        z-index: 1000;
+        left: 3rem;
+        right: 1rem;
+        top: 0.7rem;
+      }
+      .block-image{
+        position:"absolute: right;"
+        left: 100rem;
+        top: 5.5rem;
+        width: 100%;
+      }
+      .centerin{
+        text-align: left;
+        background: rgba(255,255,255,.8);
+        padding: 1rem 2rem;
+      }
+      .banjirgeojson-2016{
+        display: none;
+      }
+      .banjirgeojson-2017{
+        display: none;
+      }
+      input{
+        cursor: pointer;
+      }
+      .allrouteline{
+        /*stroke: 'red'*/
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map">
+      <div class="block-image">
+        </br>
+      <div class="block-all">
+        <div class="col-md-12 centerin">
+            <div class="row">
+                <h3 class="my-0 mr-md-auto font-weight-bold">FLOCATION</h3>
+                <table>
+                    <tr>
+                        <td><img style="height: 75px" class="img-responsive" src='images/Flocation-logo.png'></td>
+                        <td>&nbsp;&nbsp;&nbsp;</td>
+                        <td>
+                            <br/>
+                            <p>Flocation merupakan bagian dari PYP 2019 Exhibition project - Al Jabr Islamic School. Idenya adalah menghasilkan peta yg dapat membantu komunitas sekitar lingkungan sekolah Al Jabr dalam menginformasikan kejadian bencana dan route alternatif. Peta yg ditampilkan merupakan hasil dari komunitas OpenStreetMap dan peta banjir berasal dari BPBD DKI Jakarta.</br></br>
+                            <i><b>Discalimer</b>: Luasan banjir dipetakan menurut tingkat Rukun Warga (RW), walaupun di beberapa wilayah luasan banjir hanya mencakup beberapa RT Bukan keseluruhan RW (dalam satu RW terdapat beberapa RT)</i>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+          Data Banjir Tahun : &nbsp;&nbsp;&nbsp;
+          <input type="radio" name="banjirtahun" value="2016"> 2016 &nbsp;&nbsp;&nbsp;
+          <input type="radio" name="banjirtahun" value="2017"> 2017 &nbsp;&nbsp;&nbsp;
+          <input type="radio" name="banjirtahun" checked="true" value="2018"> 2018
+        </div>
+        <br/>
+        <div class="col-md-12 centerin">
+            <i class="fa fa-building-o" style="color:green" aria-hidden="true"></i> : Al Jabr Islamic School  &nbsp;&nbsp;|&nbsp;&nbsp;  
+            <i class="fa fa-road" style="color:darkred" aria-hidden="true"></i> : Jalur Masuk  &nbsp;&nbsp;|&nbsp;&nbsp;  
+            <i class="fa fa-bookmark" style="color:#7fc9ea" aria-hidden="true"></i> : Daerah Banjir (RW)
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.4.0/leaflet.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script type="text/javascript" src="dist/leaflet.awesome-markers.js"></script>
+
+    <script type="text/javascript">
+        var map = L.map('map', { //map is a global variable;
+            center: [-6.296148458, 106.8029632],
+            zoom: 13,
+            zoomDelta: 0.5,
+            zoomSnap: 0,
+            zoomControl: true,
+            layerControl:true,
+            attributionControl: false,
+            minZoom: 13.5,
+            maxZoom: 19,
+        });
+        var CartoDB_Positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        
+        }).addTo(map);
+        var clickedroute = [];
+
+        $('input[name="banjirtahun"]').on('change',function(){
+            var theval = $(this).val();
+            $('.allbanjir').hide();
+            $('.banjirgeojson-'+theval).show();
+        })
+
+        d3.json('flood_historical_data/entry_points.geojson',function(data){
+            var schoolmarker = L.AwesomeMarkers.icon({
+                icon: 'building-o',
+                markerColor: 'green',
+                prefix: 'fa',
+                iconColor: 'white'
+            });
+
+            var roadmarker = L.AwesomeMarkers.icon({
+                icon: 'road',
+                markerColor: 'darkred',
+                prefix: 'fa',
+                iconColor: 'white'
+            });
+
+            var coorskolah = 0;
+            var coorlain = [];
+            data.features.forEach(function(d){
+                if(d.properties.Route == 'Al Jabr Islamic School'){
+                    L.marker([d.geometry.coordinates[1],d.geometry.coordinates[0]], {icon: schoolmarker})
+                            .addTo(map)
+                            .bindPopup(d.properties.Route);
+
+                    coorskolah = [d.geometry.coordinates[1],d.geometry.coordinates[0]];
+                }else{
+                    L.marker([d.geometry.coordinates[1],d.geometry.coordinates[0]], {icon: roadmarker})
+                            .addTo(map)
+                            .bindPopup(d.properties.Route)
+                            .on('click', function(e) {
+                                if(clickedroute[d.properties.Route] == 0){
+                                    drawroute(d.properties.Route.split(' ').join('-'));
+                                    clickedroute[d.properties.Route] = 1;
+                                }else{
+                                    console.log('asd');
+                                    d3.selectAll('.route-'+d.properties.Route.split(' ').join('-')).remove();
+                                    clickedroute[d.properties.Route] = 0;
+                                }
+                                
+                            });
+                    clickedroute[d.properties.Route] = 0;
+                    coorlain.push([d.geometry.coordinates[1],d.geometry.coordinates[0]]);
+                }
+            })
+            // for (x in coorlain){
+            //     let link = 'https://api.openrouteservice.org/directions?&api_key=5b3ce3597851110001cf6248285dd3a1fd444c82b982c3c08b909ed7&coordinates='+coorlain[x][1]+','+coorlain[x][0]+'|'+coorskolah[1]+','+coorskolah[0]+'&profile=driving-car&preference=recommended&format=geojson&attributes=avgspeed&extra_info=steepness|suitability|surface|waycategory|waytype|tollways|traildifficulty&optimized=true&options={maximum_speed:65}&continue_straight=true&elevation=true&instructions=true&instructions_format=text&roundabout_exits=true&geometry=true&geometry_format=geojson';
+            //     $('body').append(link+'<br/><br/>');
+            // }
+        });
+
+        function drawroute(name){
+            d3.json('route/'+name+'.json',function(data){
+                let totpoin = data.features[0].properties.way_points[1];
+                let cooor = data.features[0].geometry.coordinates;
+                let poindistance = [];
+                let elev = ['Elevation'];
+                cooor.forEach(function(d,i){
+                    let dis = (data.features[0].properties.summary[0].distance / totpoin)  * i;
+                    poindistance.push((dis / 1000).toFixed(1)+' Km');
+                    elev.push(parseFloat(cooor[i][2]).toFixed(1));
+                    if(cooor[i+1]){
+                        let from = [cooor[i][1],cooor[i][0]];
+                        let to = [cooor[i+1][1],cooor[i+1][0]];
+                        let latlngs = [
+                          from,
+                          to,
+                        ];
+                        let polyline = L.polyline(latlngs, {color: 'green', weight:2, className:'allrouteline route-'+name }).addTo(map);  
+                    }
+                })
+            })
+        }
+
+        
+        ayear = [2016,2017,2018];
+        var geojson = [];
+        for(x in ayear){
+            drawbanjir(ayear[x]);
+        }
+        
+        function drawbanjir(tahun){
+            d3.json('flood_historical_data/'+tahun+'_data_v2.geojson',function(datageojson){
+                function style(feature) {
+                    return {
+                        weight: 1,
+                        opacity: 1,
+                        color: '#fff',
+                        dashArray: 1,
+                        fillOpacity: 0.3,
+                        fillColor: '#00b0ff',
+                        className:'allbanjir banjirgeojson-'+tahun
+                    };
+                }
+
+                function highlightFeature(e) {
+                    var layer = e.target;
+
+                    layer.setStyle({
+                        weight: 1.5,
+                        color: '#666',
+                        dashArray: '',
+                        fillOpacity: 0.4
+                    });
+
+                    // if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                    //     layer.bringToFront();
+                    // }
+
+                    // info.update(layer.feature.properties);
+                }
+
+                function resetHighlight(e) {
+                    geojson.resetStyle(e.target);
+                    // info.update();
+                }
+
+
+                function onEachFeature(feature, layer) {
+                    layer.on({
+                        mouseover: highlightFeature,
+                        mouseout: resetHighlight,
+                    });
+                }
+
+                geojson = L.geoJson(datageojson, {
+                    style: style,
+                    onEachFeature: onEachFeature
+                }).addTo(map);
+
+            });
+        }
+
+    </script>
+
+
+  </body>
+</html>

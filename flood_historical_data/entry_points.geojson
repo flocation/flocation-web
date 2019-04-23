@@ -1,0 +1,13 @@
+{
+"type": "FeatureCollection",
+"name": "Entry_points",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "Route": "Cilandak KKO", "Latitude": -6.292729388, "Longitude": 106.8164898 }, "geometry": { "type": "Point", "coordinates": [ 106.8164898, -6.292729388 ] } },
+{ "type": "Feature", "properties": { "Route": "RS Fatmawati", "Latitude": -6.29329146, "Longitude": 106.7952080 }, "geometry": { "type": "Point", "coordinates": [ 106.7952080, -6.29329146 ] } },
+{ "type": "Feature", "properties": { "Route": "Aneka Buana", "Latitude": -6.309243629, "Longitude": 106.7937015 }, "geometry": { "type": "Point", "coordinates": [ 106.7937015, -6.309243629 ] } },
+{ "type": "Feature", "properties": { "Route": "Ragunan", "Latitude": -6.305679349, "Longitude": 106.8206602 }, "geometry": { "type": "Point", "coordinates": [ 106.8206602, -6.305679349 ] } },
+{ "type": "Feature", "properties": { "Route": "Andara", "Latitude": -6.333996133, "Longitude": 106.7999846 }, "geometry": { "type": "Point", "coordinates": [ 106.7999846, -6.333996133 ] } },
+{ "type": "Feature", "properties": { "Route": "Al Jabr Islamic School", "Latitude": -6.308148458, "Longitude": 106.8043632 }, "geometry": { "type": "Point", "coordinates": [ 106.8043632, -6.308148458 ] } }
+]
+}
